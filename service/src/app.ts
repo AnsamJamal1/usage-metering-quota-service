@@ -5,6 +5,7 @@ import { AppError } from './errors';
 import { accountRoutes } from './routes/accounts';
 import { planRoutes } from './routes/plans';
 import { userRoutes } from './routes/users';
+import { consumeRoutes } from './routes/consume';
 
 export function buildApp() {
   const app = Fastify({ logger: process.env.NODE_ENV !== 'test' });
@@ -44,6 +45,7 @@ export function buildApp() {
   app.register(accountRoutes, { prefix: '/v1' });
   app.register(planRoutes, { prefix: '/v1' });
   app.register(userRoutes, { prefix: '/v1' });
+  app.register(consumeRoutes, { prefix: '/v1' });
 
   return app;
 }
