@@ -1,8 +1,13 @@
 import { buildApp } from './app';
 import { config } from './config';
 import { pool } from './db';
+import { migrate } from './migrate';
+import { seed } from './seed';
 
 async function main() {
+  await migrate();
+  await seed();
+
   const app = buildApp();
 
   const shutdown = async () => {

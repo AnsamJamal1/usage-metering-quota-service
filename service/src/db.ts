@@ -10,6 +10,9 @@ export const pool = new Pool({
   connectionString: config.databaseUrl,
   max: config.poolMax,
 });
+pool.on('error', (err) => {
+  console.error('Unexpected idle client error', err.message);
+});
 
 export async function tx<T>(fn: (c: PoolClient) => Promise<T>): Promise<T> {
   const client = await pool.connect();
