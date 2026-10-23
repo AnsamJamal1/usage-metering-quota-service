@@ -75,4 +75,20 @@ export async function accountRoutes(app: FastifyInstance) {
       },
     };
   });
+
+  app.put('/account/plan', { preHandler: requireAuth }, async (req) => {
+    const body = z.object({ planId: z.string().uuid() }).parse(req.body);
+
+    const check = await pool.query(
+      `SELECT id FROM plans 
+       WHERE id = $1 AND scope = 'account' AND (is_predefined = true OR account_id = $2)`,
+      [body.planId, req.accountId]
+    );
+    if (check.rows.length === 0) {
+      throw new AppError(400, 'invalid_plan', 'Must be a valid account plan owned by you or predefined');
+    }
+
+    await pool.query(`UPDATE accounts SET plan_id = $1 WHERE id = $2`, [body.planId, req.accountId]);
+    return { message: 'Account plan updated successfully', planId: body.planId };
+  });
 }
