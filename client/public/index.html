@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quota Demo Client</title>
+  <style>
+    body { font-family: system-ui; padding: 20px; max-width: 800px; margin: auto; }
+    .card { border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 8px; }
+    button { padding: 8px 12px; cursor: pointer; margin: 2px; }
+    .success { color: green; font-weight: bold; }
+    .error { color: red; font-weight: bold; }
+    pre { background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>Document Processing App (Demo)</h1>
+  
+  <div class="card">
+    <h3>1. Setup</h3>
+    <button onclick="setup()">Initialize Account & Users</button>
+  </div>
+
+  <div class="card">
+    <h3>2. Consume Actions (User: Ansam)</h3>
+    <p>Ansam is on the <b>Basic</b> plan (Max 20/request). Account limit is 50/month (Max 20/request).</p>
+    <button onclick="consume('ansam', 10)">Process 10 Documents (Should Accept)</button>
+    <button onclick="consume('ansam', 25)">Process 25 Documents (Should Reject - User Limit)</button>
+    <button onclick="consume('ansam', 15)">Process 15 Documents (Check Account Limit)</button>
+    <button onclick="consume('ansam', 15)">Process 15 Documents (Should Reject - Account Limit)</button>
+  </div>
+
+  <div class="card">
+    <h3>3. Upgrade Plan</h3>
+    <button onclick="upgrade()">Upgrade Account Plan to Pro</button>
+    <p>After upgrading, the account limit increases. Try consuming 15 again.</p>
+  </div>
+
+  <div class="card">
+    <h3>Current Usage</h3>
+    <button onclick="fetchUsage()">Refresh Usage</button>
+    <pre id="usage-output">Not loaded.</pre>
+  </div>
+
+  <div class="card">
+    <h3>Last Response</h3>
+    <pre id="response-output">No actions yet.</pre>
+  </div>
+
+  <script>
+    const API = '/api';
+
+    async function setup() {
+      const res = await fetch(`${API}/setup`, { method: 'POST' });
+      alert((await res.json()).message);
+      fetchUsage();
+    }
+
+    async function consume(userId, units) {
+      const res = await fetch(`${API}/consume`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, units })
+      });
+      const data = await res.json();
+      
+      const el = document.getElementById('response-output');
+      if (data.accepted) {
+        el.innerHTML = `<span class="success">ACCEPTED</span>\n${JSON.stringify(data, null, 2)}`;
+      } else {
+        el.innerHTML = `<span class="error">REJECTED: ${data.reason.rule} (${data.reason.level})</span>\n${JSON.stringify(data, null, 2)}`;
+      }
+      fetchUsage();
+    }
+
+    async function upgrade() {
+      await fetch(`${API}/upgrade-account`, { method: 'POST' });
+      alert('Upgraded!');
+      fetchUsage();
+    }
+
+    async function fetchUsage() {
+      const res = await fetch(`${API}/usage`);
+      const data = await res.json();
+      document.getElementById('usage-output').innerText = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>

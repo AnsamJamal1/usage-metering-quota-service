@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: quota
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - quota-network
+
+  service:
+    build: ./service
+    environment:
+      DATABASE_URL: "postgres://postgres:postgres@db:5432/quota"
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
+    ports:
+      - "3000:3000"
+    networks:
+      - quota-network
+
+  client:
+    build: ./client
+    environment:
+      API_URL: http://service:3000
+    depends_on:
+      - service
+    ports:
+      - "3001:3001"
+    networks:
+      - quota-network
+
+volumes:
+  pgdata:
+
+networks:
+  quota-network:
+    driver: bridge

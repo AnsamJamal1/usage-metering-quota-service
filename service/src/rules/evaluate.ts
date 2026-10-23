@@ -15,8 +15,7 @@ export type EvalResult =
 
 export function evaluate(ctx: EvalContext): EvalResult {
   const { units, account, user } = ctx;
-  const violations = [];
-
+  const violations: Array<{ level: 'account' | 'user'; rule: 'max_per_request' | 'monthly_allowance'; limit: number | null }> = [];
   const accPerRequest = account.limits.perRequest;
   const usrPerRequest = user.limits.perRequest;
   const accMonthly = account.limits.monthly;
