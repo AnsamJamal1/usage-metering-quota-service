@@ -6,6 +6,7 @@ import { accountRoutes } from './routes/accounts';
 import { planRoutes } from './routes/plans';
 import { userRoutes } from './routes/users';
 import { consumeRoutes } from './routes/consume';
+import { usageRoutes } from './routes/usage';
 
 export function buildApp() {
   const app = Fastify({ logger: process.env.NODE_ENV !== 'test' });
@@ -46,6 +47,7 @@ export function buildApp() {
   app.register(planRoutes, { prefix: '/v1' });
   app.register(userRoutes, { prefix: '/v1' });
   app.register(consumeRoutes, { prefix: '/v1' });
+    app.register(usageRoutes, { prefix: '/v1' });
 
   return app;
 }
