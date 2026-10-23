@@ -81,8 +81,7 @@ describe('Usage and History APIs', () => {
   it('allows querying past month usage after manually inserting data', async () => {
     const pastPeriod = '2025-01-01';
     await pool.query(`INSERT INTO account_usage (account_id, period, consumed) VALUES ($1, $2, 500)`, [accountId, pastPeriod]);
-    await pool.query(`INSERT INTO user_usage (user_id, period, consumed) VALUES ((SELECT id FROM users WHERE external_id='u1'), $1, 100)`, [pastPeriod]);
-
+    await pool.query(`INSERT INTO user_usage (user_id, period, consumed) VALUES ((SELECT id FROM users WHERE external_id='u1' AND account_id = $2), $1, 100)`, [pastPeriod, accountId]);
     const res = await app.inject({
       method: 'GET', url: '/v1/usage?month=2025-01', headers: { 'x-api-key': apiKey }
     });
